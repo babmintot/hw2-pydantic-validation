@@ -67,7 +67,7 @@ class UserRegistration(BaseModel):
         return v
 
 # ==================== ФУНКЦИЯ ====================
-# 🔥 Проверьте: здесь должно быть 'data: dict'
+# Проверьте: здесь должно быть 'data: dict'
 def register_user(data: dict):
     try:
         user = UserRegistration(**data)
@@ -87,7 +87,7 @@ if __name__ == "__main__":
     print("=" * 60)
     
     # Тест 1: Успех (с новыми полями)
-    print("\n✅ Тест 1: Правильные данные")
+    print("\n Тест 1: Правильные данные")
     good_data = {
         "username": "user_123",
         "email": "test@example.com",
@@ -108,7 +108,7 @@ if __name__ == "__main__":
         print(f"  Дата: {user['registration_date']}")
     
     # Тест 2: Ошибки (включая новые поля)
-    print("\n❌ Тест 2: Ошибки валидации")
+    print("\n Тест 2: Ошибки валидации")
     bad_data = {
         "username": "ab",
         "email": "invalid",
@@ -155,11 +155,11 @@ if __name__ == "__main__":
     
     # Тест Задания 3*
     print("\n" + "=" * 60)
-    print("⭐ ТЕСТ 3*: Рекурсивная структура")
+    print("ТЕСТ 3*: Рекурсивная структура")
     print("=" * 60)
     
     node = create_recursive_structure(depth=4, data_value="any_data")
-    print(f"✅ Создан узел типа: {type(node).__name__}")
+    print(f" Создан узел типа: {type(node).__name__}")
     
     import json
     json_output = serialize_recursive_node(node)
@@ -167,6 +167,6 @@ if __name__ == "__main__":
     
     try:
         json_str = json.dumps(json_output, default=str)
-        print(f"✅ Успешно! Длина JSON: {len(json_str)} символов")
+        print(f" Успешно! Длина JSON: {len(json_str)} символов")
     except TypeError as e:
-        print(f"❌ Ошибка: {e}")
+        print(f" Ошибка: {e}")

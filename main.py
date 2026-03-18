@@ -1,11 +1,11 @@
 from pydantic import BaseModel, EmailStr, field_validator, Field, model_validator, ValidationError
-from typing import Optional, Any 
+from typing import Optional, Any
 from datetime import datetime
 import re
 
 # ==================== МОДЕЛЬ (Задание 1 + 2) ====================
 class UserRegistration(BaseModel):
-    # Задание 1
+    # Задание 1: Основные поля
     username: str = Field(..., min_length=3, max_length=20)
     email: EmailStr
     password: str = Field(..., min_length=8)
@@ -66,8 +66,7 @@ class UserRegistration(BaseModel):
             raise ValueError('Телефон должен быть в формате +X-XXX-XX-XX')
         return v
 
-# ==================== ФУНКЦИЯ ====================
-# Проверьте: здесь должно быть 'data: dict'
+# ==================== ФУНКЦИЯ РЕГИСТРАЦИИ ====================
 def register_user(data: dict):
     try:
         user = UserRegistration(**data)
@@ -80,14 +79,38 @@ def register_user(data: dict):
             errors.append({"field": field, "message": message})
         return {"success": False, "errors": errors}
 
-# ==================== ПРОВЕРКА ====================
+# ==================== ЗАДАНИЕ 3*: РЕКУРСИВНАЯ МОДЕЛЬ ====================
+class RecursiveNode(BaseModel):
+    """Рекурсивная модель для произвольной вложенности JSON"""
+    data: Any
+    child: Optional['RecursiveNode'] = None
+
+# Обновляем forward references для рекурсивной модели
+RecursiveNode.model_rebuild()
+
+def create_recursive_structure(depth: int = 3, data_value: Any = "any_data"):
+    """Создаёт рекурсивную структуру заданной глубины"""
+    if depth <= 0:
+        return None
+    return RecursiveNode(
+        data=data_value,
+        child=create_recursive_structure(depth - 1, data_value)
+    )
+
+def serialize_recursive_node(node: RecursiveNode) -> dict:
+    """Сериализует модель в JSON-совместимый словарь"""
+    if node is None:
+        return None
+    return node.model_dump()
+
+# ==================== ТЕСТИРОВАНИЕ (ВСЕ ЗАДАНИЯ) ====================
 if __name__ == "__main__":
     print("=" * 60)
-    print("Задание 1 + 2: Регистрация пользователей")
+    print("ДЗ 2: Регистрация пользователей (Задания 1, 2, 3*)")
     print("=" * 60)
     
-    # Тест 1: Успех (с новыми полями)
-    print("\n Тест 1: Правильные данные")
+    # ===== ТЕСТЫ ЗАДАНИЯ 1+2 =====
+    print("\nТест 1: Правильные данные")
     good_data = {
         "username": "user_123",
         "email": "test@example.com",
@@ -107,59 +130,30 @@ if __name__ == "__main__":
         print(f"  Телефон: {user.get('phone')}")
         print(f"  Дата: {user['registration_date']}")
     
-    # Тест 2: Ошибки (включая новые поля)
-    print("\n Тест 2: Ошибки валидации")
+    print("\nТест 2: Ошибки валидации")
     bad_data = {
         "username": "ab",
         "email": "invalid",
         "password": "weak",
         "password_confirm": "diff",
         "age": 10,
-        "full_name": "a",        # Короткое имя
-        "phone": "123"           # Неверный формат
+        "full_name": "a",
+        "phone": "123"
     }
     result = register_user(bad_data)
     print(f"Успех: {result['success']}")
-    # ... (конец тестов Задания 1+2) ...
     if not result['success']:
         print("Ошибки:")
         for err in result['errors']:
             print(f"  - {err['field']}: {err['message']}")
-
-# ==================== ЗАДАНИЕ 3*: РЕКУРСИВНАЯ МОДЕЛЬ ====================
-
-class RecursiveNode(BaseModel):
-    """Рекурсивная модель для произвольной вложенности JSON"""
-    data: Any
-    child: Optional['RecursiveNode'] = None
-
-RecursiveNode.model_rebuild()
-
-def create_recursive_structure(depth: int = 3, data_value: Any = "any_data"):
-    if depth <= 0:
-        return None
-    return RecursiveNode(
-        data=data_value,
-        child=create_recursive_structure(depth - 1, data_value)
-    )
-
-def serialize_recursive_node(node: RecursiveNode) -> dict:
-    if node is None:
-        return None
-    return node.model_dump()
-
-
-# ==================== ТЕСТ ЗАДАНИЯ 3* ====================
-if __name__ == "__main__":
-    # ... (ваши тесты Задания 1+2) ...
     
-    # Тест Задания 3*
+    # ===== ТЕСТ ЗАДАНИЯ 3* =====
     print("\n" + "=" * 60)
     print("ТЕСТ 3*: Рекурсивная структура")
     print("=" * 60)
     
     node = create_recursive_structure(depth=4, data_value="any_data")
-    print(f" Создан узел типа: {type(node).__name__}")
+    print(f"Создан узел типа: {type(node).__name__}")
     
     import json
     json_output = serialize_recursive_node(node)
@@ -167,6 +161,10 @@ if __name__ == "__main__":
     
     try:
         json_str = json.dumps(json_output, default=str)
-        print(f" Успешно! Длина JSON: {len(json_str)} символов")
+        print(f"Успешно! Длина JSON: {len(json_str)} символов")
     except TypeError as e:
-        print(f" Ошибка: {e}")
+        print(f"Ошибка: {e}")
+    
+    print("\n" + "=" * 60)
+    print("ВСЕ ТЕСТЫ ЗАВЕРШЕНЫ!")
+    print("=" * 60)
